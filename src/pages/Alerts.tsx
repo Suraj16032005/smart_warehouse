@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-type Alert = {
-  id: string; message: string; severity: string; resolved: boolean;
-  created_at: string; product_id: string | null;
-};
+import { mockStore, useMockStore } from "@/lib/mockStore";
 
 const Alerts = () => {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const alerts = useMockStore(s => s.listAlerts());
   const [tab, setTab] = useState<"open" | "resolved">("open");
 
-  const load = async () => {
-    const { data } = await supabase.from("alerts").select("*").order("created_at", { ascending: false });
-    setAlerts(data ?? []);
-  };
-  useEffect(() => { load(); }, []);
-
-  const resolve = async (id: string) => {
-    const { error } = await supabase.from("alerts").update({ resolved: true }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Marked resolved"); load(); }
+  const resolve = (id: string) => {
+    mockStore.resolveAlert(id);
+    toast.success("Marked resolved");
   };
 
   const list = alerts.filter(a => tab === "open" ? !a.resolved : a.resolved);

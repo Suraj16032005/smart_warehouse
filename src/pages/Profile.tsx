@@ -1,45 +1,41 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User } from "lucide-react";
+import { mockStore, useMockStore } from "@/lib/mockStore";
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const stored = useMockStore(s => s.getUser());
+  const [name, setName] = useState(stored.name);
+  const [email, setEmail] = useState(stored.email);
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => {
-      setName(data?.name ?? "");
-      setEmail(data?.email ?? user.email ?? "");
-    });
-  }, [user]);
+  useEffect(() => { setName(stored.name); setEmail(stored.email); }, [stored.name, stored.email]);
 
-  const saveProfile = async (e: React.FormEvent) => {
+  const saveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (name.trim().length < 2) { toast.error("Name too short"); return; }
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({ name }).eq("id", user.id);
-    setBusy(false);
-    if (error) toast.error(error.message); else toast.success("Profile updated");
+    setTimeout(() => {
+      mockStore.updateUser({ name });
+      setBusy(false);
+      toast.success("Profile updated");
+    }, 250);
   };
 
-  const changePw = async (e: React.FormEvent) => {
+  const changePw = (e: React.FormEvent) => {
     e.preventDefault();
     if (pw.length < 8) { toast.error("Password must be at least 8 characters"); return; }
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    setBusy(false);
-    if (error) toast.error(error.message); else { toast.success("Password updated"); setPw(""); }
+    setTimeout(() => {
+      setBusy(false);
+      toast.success("Password updated");
+      setPw("");
+    }, 250);
   };
 
   return (

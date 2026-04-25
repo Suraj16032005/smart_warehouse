@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Package, Boxes, AlertTriangle, TrendingUp, ArrowRight } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area, CartesianGrid } from "recharts";
-
-type Stats = { products: number; lowStock: number; totalQty: number; alerts: number };
+import { useMockStore } from "@/lib/mockStore";
 
 const StatCard = ({ id, label, value, icon: Icon, trend, accent }: any) => (
   <div className="bg-card border border-foreground/15 p-6 relative group hover:border-foreground transition-colors">
@@ -25,32 +23,30 @@ const StatCard = ({ id, label, value, icon: Icon, trend, accent }: any) => (
 
 const Dashboard = () => {
   const nav = useNavigate();
-  const [stats, setStats] = useState<Stats>({ products: 0, lowStock: 0, totalQty: 0, alerts: 0 });
-  const [chartData, setChartData] = useState<{ name: string; qty: number }[]>([]);
-  const [trendData, setTrendData] = useState<{ d: string; v: number }[]>([]);
-  const [recent, setRecent] = useState<any[]>([]);
+  const products = useMockStore(s => s.listProducts());
+  const inventory = useMockStore(s => s.listInventory());
+  const openAlerts = useMockStore(s => s.openAlertCount());
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: products }, { data: inventory }, { count: alerts }] = await Promise.all([
-        supabase.from("products").select("id, name, created_at").order("created_at", { ascending: false }),
-        supabase.from("inventory").select("product_id, quantity, low_stock_threshold, products(name)"),
-        supabase.from("alerts").select("id", { count: "exact", head: true }).eq("resolved", false),
-      ]);
-      const inv = inventory ?? [];
-      const totalQty = inv.reduce((s, r: any) => s + (r.quantity ?? 0), 0);
-      const lowStock = inv.filter((r: any) => r.quantity <= r.low_stock_threshold).length;
-      setStats({ products: products?.length ?? 0, lowStock, totalQty, alerts: alerts ?? 0 });
-      setChartData(inv.slice(0, 8).map((r: any) => ({ name: r.products?.name?.slice(0, 10) ?? "—", qty: r.quantity })));
-      setRecent((products ?? []).slice(0, 5));
-      // synthetic 7-day trend from current totals (visualization only)
-      const today = totalQty || 50;
-      setTrendData(Array.from({ length: 7 }, (_, i) => ({
-        d: ["MON","TUE","WED","THU","FRI","SAT","SUN"][i],
-        v: Math.max(0, Math.round(today * (0.7 + Math.random() * 0.4))),
-      })));
-    })();
-  }, []);
+  const stats = useMemo(() => {
+    const totalQty = inventory.reduce((s, r) => s + r.quantity, 0);
+    const lowStock = inventory.filter(r => r.quantity <= r.low_stock_threshold).length;
+    return { products: products.length, totalQty, lowStock, alerts: openAlerts };
+  }, [products, inventory, openAlerts]);
+
+  const chartData = useMemo(() => inventory.slice(0, 8).map(r => {
+    const prod = products.find(p => p.id === r.product_id);
+    return { name: (prod?.name ?? "—").slice(0, 10), qty: r.quantity };
+  }), [inventory, products]);
+
+  const trendData = useMemo(() => {
+    const today = stats.totalQty || 50;
+    return ["MON","TUE","WED","THU","FRI","SAT","SUN"].map((d, i) => ({
+      d,
+      v: Math.max(0, Math.round(today * (0.7 + ((i * 37) % 100) / 250))),
+    }));
+  }, [stats.totalQty]);
+
+  const recent = products.slice(0, 5);
 
   return (
     <AppLayout>
@@ -66,7 +62,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* STAT CARDS */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard id="01" label="Total products" value={stats.products} icon={Package} trend="catalogued items" />
             <StatCard id="02" label="Total quantity" value={stats.totalQty} icon={Boxes} trend="units in stock" />
@@ -74,7 +69,6 @@ const Dashboard = () => {
             <StatCard id="04" label="Open alerts" value={stats.alerts} icon={TrendingUp} accent="bg-destructive text-destructive-foreground" trend="awaiting action" />
           </div>
 
-          {/* CHARTS */}
           <div className="grid lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-card border border-foreground/15 p-6 relative">
               <span className="absolute -top-px -left-px w-2.5 h-2.5 border-t-2 border-l-2 border-foreground" />
@@ -126,7 +120,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* RECENT */}
           <div className="bg-card border border-foreground/15 p-6">
             <div className="flex items-baseline justify-between mb-4">
               <div>

@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,80 +9,57 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-type Row = {
-  id: string;
-  product_id: string;
-  quantity: number;
-  low_stock_threshold: number;
-  location: string | null;
-  updated_at: string;
-  products: { id: string; name: string; sku: string | null; unit: string | null } | null;
-};
+import { mockStore, useMockStore, type InventoryRow } from "@/lib/mockStore";
 
 const Inventory = () => {
-  const { user } = useAuth();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const rows = useMockStore(s => s.listInventory());
+  const products = useMockStore(s => s.listProducts());
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "in" | "low">("all");
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Row | null>(null);
+  const [editing, setEditing] = useState<InventoryRow | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
   const [form, setForm] = useState({ product_id: "", quantity: 0, low_stock_threshold: 10, location: "" });
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    const [{ data }, { data: prods }] = await Promise.all([
-      supabase.from("inventory").select("*, products(id, name, sku, unit)").order("updated_at", { ascending: false }),
-      supabase.from("products").select("id, name").order("name"),
-    ]);
-    setRows((data as any) ?? []);
-    setProducts(prods ?? []);
-  };
-  useEffect(() => { load(); }, []);
+  const productMap = new Map(products.map(p => [p.id, p]));
 
   const openNew = () => {
     setEditing(null);
     setForm({ product_id: "", quantity: 0, low_stock_threshold: 10, location: "" });
     setOpen(true);
   };
-  const openEdit = (r: Row) => {
+  const openEdit = (r: InventoryRow) => {
     setEditing(r);
     setForm({ product_id: r.product_id, quantity: r.quantity, low_stock_threshold: r.low_stock_threshold, location: r.location ?? "" });
     setOpen(true);
   };
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!form.product_id) { toast.error("Select a product"); return; }
     setBusy(true);
     if (editing) {
-      const { error } = await supabase.from("inventory").update({
-        quantity: form.quantity, low_stock_threshold: form.low_stock_threshold, location: form.location,
-      }).eq("id", editing.id);
-      if (error) toast.error(error.message); else toast.success("Inventory updated");
+      mockStore.updateInventory(editing.id, { quantity: form.quantity, low_stock_threshold: form.low_stock_threshold, location: form.location });
+      toast.success("Inventory updated");
     } else {
-      // upsert by product_id
-      const { error } = await supabase.from("inventory").upsert({
-        user_id: user.id, product_id: form.product_id,
-        quantity: form.quantity, low_stock_threshold: form.low_stock_threshold, location: form.location,
-      }, { onConflict: "product_id" });
-      if (error) toast.error(error.message); else toast.success("Inventory saved");
+      mockStore.upsertInventory(form);
+      toast.success("Inventory saved");
     }
-    setBusy(false); setOpen(false); load();
+    setBusy(false);
+    setOpen(false);
   };
 
-  const onDelete = async () => {
+  const onDelete = () => {
     if (!delId) return;
-    const { error } = await supabase.from("inventory").delete().eq("id", delId);
-    if (error) toast.error(error.message); else toast.success("Removed");
-    setDelId(null); load();
+    mockStore.deleteInventory(delId);
+    toast.success("Removed");
+    setDelId(null);
   };
 
   const filtered = rows.filter(r => {
-    const name = r.products?.name ?? "";
+    const prod = productMap.get(r.product_id);
+    const name = prod?.name ?? "";
     if (q && !name.toLowerCase().includes(q.toLowerCase())) return false;
     if (filter === "low" && r.quantity > r.low_stock_threshold) return false;
     if (filter === "in" && r.quantity <= r.low_stock_threshold) return false;
@@ -140,17 +115,18 @@ const Inventory = () => {
                 </thead>
                 <tbody>
                   {filtered.map(r => {
+                    const prod = productMap.get(r.product_id);
                     const low = r.quantity <= r.low_stock_threshold;
                     const out = r.quantity === 0;
                     return (
                       <tr key={r.id} className="border-t border-foreground/10 hover:bg-paper-2/50">
                         <td className="px-4 py-3">
-                          <div className="font-medium">{r.products?.name ?? "—"}</div>
-                          {r.products?.sku && <div className="font-mono text-[10px] text-muted-foreground">{r.products.sku}</div>}
+                          <div className="font-medium">{prod?.name ?? "—"}</div>
+                          {prod?.sku && <div className="font-mono text-[10px] text-muted-foreground">{prod.sku}</div>}
                         </td>
                         <td className="px-4 py-3 font-mono">
                           <span className="text-lg font-bold">{r.quantity}</span>
-                          <span className="text-xs text-muted-foreground ml-1">{r.products?.unit ?? ""}</span>
+                          <span className="text-xs text-muted-foreground ml-1">{prod?.unit ?? ""}</span>
                           <span className="text-[10px] text-muted-foreground ml-2">/ {r.low_stock_threshold}</span>
                         </td>
                         <td className="px-4 py-3">

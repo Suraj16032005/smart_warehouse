@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,16 +20,16 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
-    setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Welcome back");
-    nav("/dashboard");
+    setTimeout(() => {
+      setBusy(false);
+      toast.success("Welcome back");
+      nav("/dashboard");
+    }, 400);
   };
 
   return (
