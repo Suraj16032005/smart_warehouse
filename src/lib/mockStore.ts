@@ -111,7 +111,7 @@ export const mockStore = {
   },
 
   // Inventory
-  listInventory(): InventoryRow[] { return [...state.inventory].sort((a, b) => b.updated_at.localeCompare(a.updated_at)); },
+  listInventory(): InventoryRow[] { return inventorySnap; },
   upsertInventory(input: { product_id: string; quantity: number; low_stock_threshold: number; location: string }) {
     const existing = state.inventory.find(r => r.product_id === input.product_id);
     if (existing) {
@@ -141,15 +141,15 @@ export const mockStore = {
   },
 
   // Alerts
-  listAlerts(): Alert[] { return [...state.alerts].sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+  listAlerts(): Alert[] { return alertsSnap; },
   resolveAlert(id: string) {
     const a = state.alerts.find(x => x.id === id);
     if (a) { a.resolved = true; notify(); }
   },
-  openAlertCount() { return state.alerts.filter(a => !a.resolved).length; },
+  openAlertCount() { return openAlertCountSnap; },
 
   // User
-  getUser() { return { ...state.user }; },
+  getUser() { return userSnap; },
   updateUser(patch: Partial<{ name: string; email: string }>) {
     state.user = { ...state.user, ...patch };
     notify();
