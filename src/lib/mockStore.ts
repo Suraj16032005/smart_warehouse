@@ -68,13 +68,30 @@ const state: State = {
 };
 
 const listeners = new Set<() => void>();
-const notify = () => listeners.forEach(l => l());
+
+// Cached snapshots — must return the SAME reference until data mutates,
+// otherwise useSyncExternalStore will loop infinitely.
+let productsSnap: Product[] = [...state.products].sort((a, b) => b.created_at.localeCompare(a.created_at));
+let inventorySnap: InventoryRow[] = [...state.inventory].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+let alertsSnap: Alert[] = [...state.alerts].sort((a, b) => b.created_at.localeCompare(a.created_at));
+let userSnap = { ...state.user };
+let openAlertCountSnap = state.alerts.filter(a => !a.resolved).length;
+
+const refresh = () => {
+  productsSnap = [...state.products].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  inventorySnap = [...state.inventory].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  alertsSnap = [...state.alerts].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  userSnap = { ...state.user };
+  openAlertCountSnap = state.alerts.filter(a => !a.resolved).length;
+};
+
+const notify = () => { refresh(); listeners.forEach(l => l()); };
 
 export const mockStore = {
   subscribe(fn: () => void) { listeners.add(fn); return () => listeners.delete(fn); },
 
   // Products
-  listProducts(): Product[] { return [...state.products].sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+  listProducts(): Product[] { return productsSnap; },
   getProduct(id: string) { return state.products.find(p => p.id === id) ?? null; },
   addProduct(input: Omit<Product, "id" | "created_at">) {
     const p: Product = { ...input, id: uid(), created_at: now() };
