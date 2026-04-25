@@ -5,7 +5,8 @@ import { Logo } from "@/components/BlueprintMark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useMockStore } from "@/lib/mockStore";
+import { useAlerts } from "@/lib/queries";
+import { useAuth } from "@/lib/auth";
 
 const nav = [
   { id: "00", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -20,12 +21,14 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const alertCount = useMockStore(s => s.openAlertCount());
-  const user = useMockStore(s => s.getUser());
+  
+  const { data: alerts = [] } = useAlerts();
+  const alertCount = alerts.filter(a => a.status === 'active').length;
+  
+  const { user, logout } = useAuth();
 
   const onLogout = () => {
-    toast.success("Signed out");
-    navigate("/login");
+    logout();
   };
 
   const current = nav.find(n => location.pathname.startsWith(n.to));
@@ -114,7 +117,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
               <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">Operator</div>
-              <div className="text-sm font-medium">{user.name}</div>
+              <div className="text-sm font-medium">{user?.name || "Loading..."}</div>
             </div>
             <Button variant="outline" size="sm" onClick={onLogout}
               className="rounded-none border-foreground/30 hover:bg-foreground hover:text-background font-mono text-[10px] tracking-[0.2em] uppercase">

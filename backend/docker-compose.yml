@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: cloudstock_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cloudstock
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cloudstock"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./auth-service
+    container_name: cloudstock_auth
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=cloudstock
+      - JWT_SECRET=super_secret_jwt_key_123
+      - PORT=3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  product-service:
+    build: ./product-service
+    container_name: cloudstock_product
+    ports:
+      - "3002:3002"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=cloudstock
+      - JWT_SECRET=super_secret_jwt_key_123
+      - PORT=3002
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: cloudstock_inventory
+    ports:
+      - "3003:3003"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=cloudstock
+      - JWT_SECRET=super_secret_jwt_key_123
+      - PORT=3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  alert-service:
+    build: ./alert-service
+    container_name: cloudstock_alert
+    ports:
+      - "3004:3004"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=cloudstock
+      - JWT_SECRET=super_secret_jwt_key_123
+      - PORT=3004
+      - SMTP_SERVICE=${SMTP_SERVICE:-gmail}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-"CloudStock Alerts" <alerts@cloudstock.local>}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

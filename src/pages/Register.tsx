@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/BlueprintMark";
-import { mockStore } from "@/lib/mockStore";
+import { useAuth } from "@/lib/auth";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
@@ -18,23 +18,28 @@ const schema = z.object({
 
 const Register = () => {
   const nav = useNavigate();
+  const { register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    
     setBusy(true);
-    setTimeout(() => {
-      mockStore.updateUser({ name: parsed.data.name, email: parsed.data.email });
+    try {
+      await register({ name: parsed.data.name, email: parsed.data.email, password: parsed.data.password });
+      toast.success("Account created! Please log in.");
+      nav("/login");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
       setBusy(false);
-      toast.success("Account created");
-      nav("/dashboard");
-    }, 400);
+    }
   };
 
   return (

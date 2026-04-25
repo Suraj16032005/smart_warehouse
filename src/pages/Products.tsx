@@ -8,40 +8,55 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
-import { mockStore, useMockStore, type Product } from "@/lib/mockStore";
+import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct } from "@/lib/queries";
+import { Product } from "@/lib/api/productApi";
 
 const Products = () => {
-  const items = useMockStore(s => s.listProducts());
+  const { data: items = [], isLoading } = useProducts();
+  const addProduct = useAddProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [delId, setDelId] = useState<string | null>(null);
+  const [delId, setDelId] = useState<number | null>(null);
   const [form, setForm] = useState({ name: "", sku: "", category: "", description: "", unit: "pcs" });
   const [busy, setBusy] = useState(false);
 
   const openNew = () => { setEditing(null); setForm({ name: "", sku: "", category: "", description: "", unit: "pcs" }); setOpen(true); };
-  const openEdit = (p: Product) => { setEditing(p); setForm({ name: p.name, sku: p.sku ?? "", category: p.category ?? "", description: p.description ?? "", unit: p.unit ?? "pcs" }); setOpen(true); };
+  const openEdit = (p: Product) => { setEditing(p); setForm({ name: p.name, sku: (p as any).sku ?? "", category: p.category ?? "", description: p.description ?? "", unit: (p as any).unit ?? "pcs" }); setOpen(true); };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.name.trim().length < 2) { toast.error("Name is required"); return; }
     setBusy(true);
-    if (editing) {
-      mockStore.updateProduct(editing.id, form);
-      toast.success("Product updated");
-    } else {
-      mockStore.addProduct(form);
-      toast.success("Product added");
+    try {
+      if (editing) {
+        await updateProduct.mutateAsync({ id: editing.id, data: form });
+        toast.success("Product updated");
+      } else {
+        await addProduct.mutateAsync(form);
+        toast.success("Product added");
+      }
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to save product");
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    setOpen(false);
   };
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (!delId) return;
-    mockStore.deleteProduct(delId);
-    toast.success("Product deleted");
-    setDelId(null);
+    try {
+      await deleteProduct.mutateAsync(delId);
+      toast.success("Product deleted");
+    } catch (error) {
+      toast.error("Failed to delete product");
+    } finally {
+      setDelId(null);
+    }
   };
 
   const filtered = items.filter(p =>

@@ -5,25 +5,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User } from "lucide-react";
-import { mockStore, useMockStore } from "@/lib/mockStore";
+import { useAuth } from "@/lib/auth";
 
 const Profile = () => {
-  const stored = useMockStore(s => s.getUser());
-  const [name, setName] = useState(stored.name);
-  const [email, setEmail] = useState(stored.email);
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { setName(stored.name); setEmail(stored.email); }, [stored.name, stored.email]);
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
   const saveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) { toast.error("Name too short"); return; }
     setBusy(true);
     setTimeout(() => {
-      mockStore.updateUser({ name });
       setBusy(false);
-      toast.success("Profile updated");
+      toast.info("Profile update not connected to DB in this demo.");
     }, 250);
   };
 
@@ -33,7 +37,7 @@ const Profile = () => {
     setBusy(true);
     setTimeout(() => {
       setBusy(false);
-      toast.success("Password updated");
+      toast.info("Password update not connected to DB in this demo.");
       setPw("");
     }, 250);
   };

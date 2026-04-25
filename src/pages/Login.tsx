@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/BlueprintMark";
+import { useAuth } from "@/lib/auth";
 
 const schema = z.object({
   email: z.string().trim().email("Invalid email address").max(255),
@@ -15,21 +16,27 @@ const schema = z.object({
 
 const Login = () => {
   const nav = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    
     setBusy(true);
-    setTimeout(() => {
-      setBusy(false);
+    try {
+      await login({ email, password });
       toast.success("Welcome back");
       nav("/dashboard");
-    }, 400);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

@@ -4,18 +4,23 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { mockStore, useMockStore } from "@/lib/mockStore";
+import { useAlerts, useResolveAlert } from "@/lib/queries";
 
 const Alerts = () => {
-  const alerts = useMockStore(s => s.listAlerts());
+  const { data: alerts = [], isLoading } = useAlerts();
+  const resolveAlert = useResolveAlert();
   const [tab, setTab] = useState<"open" | "resolved">("open");
 
-  const resolve = (id: string) => {
-    mockStore.resolveAlert(id);
-    toast.success("Marked resolved");
+  const resolve = async (id: number) => {
+    try {
+      await resolveAlert.mutateAsync(id);
+      toast.success("Marked resolved");
+    } catch (error) {
+      toast.error("Failed to resolve alert");
+    }
   };
 
-  const list = alerts.filter(a => tab === "open" ? !a.resolved : a.resolved);
+  const list = alerts.filter(a => tab === "open" ? a.status === "active" : a.status === "resolved");
 
   return (
     <AppLayout>
@@ -46,7 +51,7 @@ const Alerts = () => {
           ) : (
             <div className="space-y-3">
               {list.map(a => {
-                const critical = a.severity === "critical";
+                const critical = true; // Alerts from real DB are low stock triggers, treat as critical
                 return (
                   <div key={a.id} className={cn(
                     "bg-card border-l-4 border border-foreground/15 p-5 flex items-start gap-4 group transition-all",
@@ -59,7 +64,7 @@ const Alerts = () => {
                       <div className="flex items-center gap-3 mb-1">
                         <span className={cn("font-mono text-[10px] tracking-[0.2em] uppercase px-1.5 py-0.5",
                           critical ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground")}>
-                          {a.severity}
+                          CRITICAL
                         </span>
                         <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground flex items-center gap-1">
                           <Clock className="w-3 h-3" /> {new Date(a.created_at).toLocaleString()}
@@ -67,13 +72,13 @@ const Alerts = () => {
                       </div>
                       <p className="font-medium">{a.message}</p>
                     </div>
-                    {!a.resolved && (
-                      <Button onClick={() => resolve(a.id)} variant="outline"
+                    {a.status === "active" && (
+                      <Button onClick={() => resolve(a.id)} variant="outline" disabled={resolveAlert.isPending}
                         className="rounded-none border-foreground/30 font-mono text-[10px] tracking-[0.2em] uppercase hover:bg-foreground hover:text-background">
                         Mark resolved
                       </Button>
                     )}
-                    {a.resolved && (
+                    {a.status === "resolved" && (
                       <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-success flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Resolved
                       </span>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Package, Boxes, AlertTriangle, TrendingUp, ArrowRight } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area, CartesianGrid } from "recharts";
-import { useMockStore } from "@/lib/mockStore";
+import { useProducts, useInventory, useAlerts } from "@/lib/queries";
 
 const StatCard = ({ id, label, value, icon: Icon, trend, accent }: any) => (
   <div className="bg-card border border-foreground/15 p-6 relative group hover:border-foreground transition-colors">
@@ -23,13 +23,16 @@ const StatCard = ({ id, label, value, icon: Icon, trend, accent }: any) => (
 
 const Dashboard = () => {
   const nav = useNavigate();
-  const products = useMockStore(s => s.listProducts());
-  const inventory = useMockStore(s => s.listInventory());
-  const openAlerts = useMockStore(s => s.openAlertCount());
+  const { data: products = [] } = useProducts();
+  const { data: inventory = [] } = useInventory();
+  const { data: alerts = [] } = useAlerts();
+  
+  // Note: we'll compute openAlerts inline now
+  const openAlerts = alerts.filter(a => a.status === 'active').length;
 
   const stats = useMemo(() => {
     const totalQty = inventory.reduce((s, r) => s + r.quantity, 0);
-    const lowStock = inventory.filter(r => r.quantity <= r.low_stock_threshold).length;
+    const lowStock = inventory.filter(r => r.quantity < 10).length;
     return { products: products.length, totalQty, lowStock, alerts: openAlerts };
   }, [products, inventory, openAlerts]);
 
