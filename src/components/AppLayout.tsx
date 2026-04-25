@@ -1,12 +1,11 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Boxes, Package, Bell, User, LogOut, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Logo } from "@/components/BlueprintMark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useMockStore } from "@/lib/mockStore";
 
 const nav = [
   { id: "00", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -17,24 +16,14 @@ const nav = [
 ];
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [alertCount, setAlertCount] = useState(0);
-  const [name, setName] = useState<string>("");
+  const alertCount = useMockStore(s => s.openAlertCount());
+  const user = useMockStore(s => s.getUser());
 
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("alerts").select("id", { count: "exact", head: true }).eq("resolved", false)
-      .then(({ count }) => setAlertCount(count ?? 0));
-    supabase.from("profiles").select("name").eq("id", user.id).maybeSingle()
-      .then(({ data }) => setName(data?.name ?? user.email?.split("@")[0] ?? ""));
-  }, [user, location.pathname]);
-
-  const onLogout = async () => {
-    await signOut();
+  const onLogout = () => {
     toast.success("Signed out");
     navigate("/login");
   };
@@ -125,7 +114,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
               <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">Operator</div>
-              <div className="text-sm font-medium">{name}</div>
+              <div className="text-sm font-medium">{user.name}</div>
             </div>
             <Button variant="outline" size="sm" onClick={onLogout}
               className="rounded-none border-foreground/30 hover:bg-foreground hover:text-background font-mono text-[10px] tracking-[0.2em] uppercase">

@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/BlueprintMark";
+import { mockStore } from "@/lib/mockStore";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Name is too short").max(80),
@@ -24,20 +24,17 @@ const Register = () => {
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { name: parsed.data.name } },
-    });
-    setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Account created");
-    nav("/dashboard");
+    setTimeout(() => {
+      mockStore.updateUser({ name: parsed.data.name, email: parsed.data.email });
+      setBusy(false);
+      toast.success("Account created");
+      nav("/dashboard");
+    }, 400);
   };
 
   return (

@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
-
-type Product = { id: string; name: string; sku: string | null; category: string | null; description: string | null; unit: string | null; created_at: string };
+import { mockStore, useMockStore, type Product } from "@/lib/mockStore";
 
 const Products = () => {
-  const { user } = useAuth();
-  const [items, setItems] = useState<Product[]>([]);
+  const items = useMockStore(s => s.listProducts());
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
@@ -23,43 +19,29 @@ const Products = () => {
   const [form, setForm] = useState({ name: "", sku: "", category: "", description: "", unit: "pcs" });
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-    setItems(data ?? []);
-  };
-  useEffect(() => { load(); }, []);
-
   const openNew = () => { setEditing(null); setForm({ name: "", sku: "", category: "", description: "", unit: "pcs" }); setOpen(true); };
   const openEdit = (p: Product) => { setEditing(p); setForm({ name: p.name, sku: p.sku ?? "", category: p.category ?? "", description: p.description ?? "", unit: p.unit ?? "pcs" }); setOpen(true); };
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form.name.trim().length < 2) { toast.error("Name is required"); return; }
-    if (!user) return;
     setBusy(true);
     if (editing) {
-      const { error } = await supabase.from("products").update(form).eq("id", editing.id);
-      if (error) toast.error(error.message); else toast.success("Product updated");
+      mockStore.updateProduct(editing.id, form);
+      toast.success("Product updated");
     } else {
-      const { data: prod, error } = await supabase.from("products").insert({ ...form, user_id: user.id }).select().single();
-      if (error) { toast.error(error.message); }
-      else {
-        // also create an inventory row
-        await supabase.from("inventory").insert({ user_id: user.id, product_id: prod.id, quantity: 0, low_stock_threshold: 10 });
-        toast.success("Product added");
-      }
+      mockStore.addProduct(form);
+      toast.success("Product added");
     }
     setBusy(false);
     setOpen(false);
-    load();
   };
 
-  const onDelete = async () => {
+  const onDelete = () => {
     if (!delId) return;
-    const { error } = await supabase.from("products").delete().eq("id", delId);
-    if (error) toast.error(error.message); else toast.success("Product deleted");
+    mockStore.deleteProduct(delId);
+    toast.success("Product deleted");
     setDelId(null);
-    load();
   };
 
   const filtered = items.filter(p =>
