@@ -1,3 +1,10 @@
-# Welcome to your Lovable project
 
-TODO: Document your project here
+
+## Smart WareHouse 
+
+### Start the Application
+
+```bash
+cd smart_warehouse
+docker compose up --build
+```

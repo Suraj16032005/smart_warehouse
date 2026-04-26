@@ -25,7 +25,8 @@ const createClient = (baseURL: string) => {
   return instance;
 };
 
-export const authClient = createClient("http://localhost:3001/auth");
-export const productClient = createClient("http://localhost:3002/products");
-export const inventoryClient = createClient("http://localhost:3003/inventory");
-export const alertClient = createClient("http://localhost:3004/alerts");
+
+export const authClient = createClient(`${import.meta.env.VITE_AUTH}/auth`);
+export const productClient = createClient(`${import.meta.env.VITE_PRODUCT}/products`);
+export const inventoryClient = createClient(`${import.meta.env.VITE_INVENTORY}/inventory`);
+export const alertClient = createClient(`${import.meta.env.VITE_ALERT}/alerts`);
