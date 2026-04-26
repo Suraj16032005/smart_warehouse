@@ -1,7 +1,10 @@
 import axios from "axios";
 
 const createClient = (baseURL: string) => {
-  const instance = axios.create({ baseURL, withCredentials: true });
+  const instance = axios.create({
+    baseURL,
+    withCredentials: true
+  });
 
   instance.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
@@ -12,8 +15,8 @@ const createClient = (baseURL: string) => {
   });
 
   instance.interceptors.response.use(
-    res => res,
-    err => {
+    (res) => res,
+    (err) => {
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         window.location.href = "/login";
@@ -25,8 +28,7 @@ const createClient = (baseURL: string) => {
   return instance;
 };
 
-
-export const authClient = createClient(`${import.meta.env.VITE_AUTH}/auth`);
-export const productClient = createClient(`${import.meta.env.VITE_PRODUCT}/products`);
-export const inventoryClient = createClient(`${import.meta.env.VITE_INVENTORY}/inventory`);
-export const alertClient = createClient(`${import.meta.env.VITE_ALERT}/alerts`);
+export const authClient = createClient("/auth");
+export const productClient = createClient("/products");
+export const inventoryClient = createClient("/inventory");
+export const alertClient = createClient("/alerts");
