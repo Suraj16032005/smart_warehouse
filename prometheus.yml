@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['cloudstock_product:3002']
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['cloudstock_auth:3001']
+
+  - job_name: 'inventory-service'
+    static_configs:
+      - targets: ['cloudstock_inventory:3003']
+
+  - job_name: 'alert-service'
+    static_configs:
+      - targets: ['cloudstock_alert:3004']
