@@ -118,7 +118,7 @@ const Landing = () => (
     <section className="container py-24">
       <div className="grid lg:grid-cols-12 gap-8 mb-16">
         <div className="lg:col-span-4">
-          <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-3">// CAPABILITIES</div>
+          <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-3">CAPABILITIES</div>
           <h2 className="font-display text-4xl md:text-5xl font-black leading-tight">Engineered for the floor.</h2>
         </div>
         <p className="lg:col-span-7 lg:col-start-6 text-lg text-muted-foreground leading-relaxed">
@@ -146,7 +146,7 @@ const Landing = () => (
         <div className="absolute inset-0 bg-blueprint-dark opacity-60" />
         <div className="relative z-10 grid lg:grid-cols-2 gap-8 items-center">
           <div>
-            <div className="font-mono text-[11px] tracking-[0.3em] text-background/60 mb-4">// READY?</div>
+            <div className="font-mono text-[11px] tracking-[0.3em] text-background/60 mb-4">READY?</div>
             <h2 className="font-display text-4xl md:text-5xl font-black leading-tight">
               Start tracking in <span className="italic font-medium text-accent">three minutes</span>.
             </h2>

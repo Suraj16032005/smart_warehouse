@@ -63,7 +63,7 @@ const Login = () => {
       <div className="flex flex-col justify-center px-6 lg:px-16 py-12">
         <div className="lg:hidden mb-10"><Logo /></div>
         <div className="max-w-sm w-full mx-auto">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-3">// LOG IN</div>
+          <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-3">LOG IN</div>
           <h2 className="font-display text-4xl font-black mb-2">Sign in</h2>
           <p className="text-muted-foreground mb-8 text-sm">Access your control panel.</p>
 

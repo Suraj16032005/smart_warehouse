@@ -5,6 +5,8 @@ export type Product = {
   name: string;
   category: string;
   description?: string;
+  sku?: string;
+  unit?: string;
   created_at: string;
 };
 

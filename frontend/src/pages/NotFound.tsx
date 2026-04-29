@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 const NotFound = () => (
   <div className="min-h-screen bg-blueprint grid place-items-center px-6">
     <div className="text-center max-w-md">
-      <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-3">// ERROR 404</div>
+      <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-3">RROR 404</div>
       <h1 className="font-display text-7xl font-black mb-3">Off-grid.</h1>
       <p className="text-muted-foreground mb-6">This sheet does not exist on the blueprint.</p>
       <Link to="/">

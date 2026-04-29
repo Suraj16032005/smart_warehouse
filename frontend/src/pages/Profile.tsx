@@ -47,7 +47,7 @@ const Profile = () => {
       <div className="bg-blueprint min-h-full">
         <div className="p-6 md:p-10 space-y-6 max-w-3xl">
           <div>
-            <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">// OPERATOR</div>
+            <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">OPERATOR</div>
             <h1 className="font-display text-4xl md:text-5xl font-black">Profile</h1>
           </div>
 
@@ -65,7 +65,7 @@ const Profile = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <form onSubmit={saveProfile} className="bg-card border border-foreground/15 p-6 space-y-4">
               <div>
-                <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground">// 01</div>
+                <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground">01</div>
                 <h3 className="font-display text-xl font-black">Personal info</h3>
               </div>
               <div className="space-y-1.5">
@@ -84,7 +84,7 @@ const Profile = () => {
 
             <form onSubmit={changePw} className="bg-card border border-foreground/15 p-6 space-y-4">
               <div>
-                <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground">// 02</div>
+                <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground">02</div>
                 <h3 className="font-display text-xl font-black">Change password</h3>
               </div>
               <div className="space-y-1.5">

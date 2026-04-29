@@ -28,7 +28,7 @@ const Alerts = () => {
         <div className="p-6 md:p-10 space-y-6 max-w-[1200px]">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
-              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">// SIGNAL LOG</div>
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2"></div>
               <h1 className="font-display text-4xl md:text-5xl font-black">Alerts</h1>
             </div>
             <div className="flex border border-foreground/20 font-mono text-[10px] tracking-[0.2em] uppercase">
@@ -44,7 +44,7 @@ const Alerts = () => {
           {list.length === 0 ? (
             <div className="bg-card border border-foreground/15 py-20 text-center">
               <CheckCircle2 className="w-10 h-10 mx-auto text-success mb-4" strokeWidth={1.5} />
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-2">// CLEAR</div>
+              <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-2"></div>
               <div className="font-display text-2xl font-black">{tab === "open" ? "No open alerts" : "No resolved alerts"}</div>
               <p className="text-muted-foreground mt-2 text-sm">{tab === "open" ? "Your warehouse is operating normally." : "Resolved alerts will appear here."}</p>
             </div>

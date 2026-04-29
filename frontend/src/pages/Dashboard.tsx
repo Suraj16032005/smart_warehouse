@@ -57,7 +57,7 @@ const Dashboard = () => {
         <div className="p-6 md:p-10 space-y-8 max-w-[1600px]">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
-              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">// CONTROL PANEL</div>
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2"></div>
               <h1 className="font-display text-4xl md:text-5xl font-black">Operations overview</h1>
             </div>
             <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
@@ -84,7 +84,7 @@ const Dashboard = () => {
               </div>
               <div className="h-64">
                 {chartData.length === 0 ? (
-                  <div className="h-full grid place-items-center font-mono text-xs text-muted-foreground tracking-widest">// NO DATA — ADD INVENTORY</div>
+                  <div className="h-full grid place-items-center font-mono text-xs text-muted-foreground tracking-widest">NO DATA — ADD INVENTORY</div>
                 ) : (
                   <ResponsiveContainer>
                     <BarChart data={chartData}>
@@ -134,7 +134,7 @@ const Dashboard = () => {
               </button>
             </div>
             {recent.length === 0 ? (
-              <div className="py-10 text-center font-mono text-xs tracking-widest text-muted-foreground">// NO RECENT ACTIVITY</div>
+              <div className="py-10 text-center font-mono text-xs tracking-widest text-muted-foreground">NO RECENT ACTIVITY</div>
             ) : (
               <div className="divide-y divide-foreground/10">
                 {recent.map((p, i) => (

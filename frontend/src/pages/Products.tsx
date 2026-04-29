@@ -25,7 +25,7 @@ const Products = () => {
   const [busy, setBusy] = useState(false);
 
   const openNew = () => { setEditing(null); setForm({ name: "", sku: "", category: "", description: "", unit: "pcs" }); setOpen(true); };
-  const openEdit = (p: Product) => { setEditing(p); setForm({ name: p.name, sku: (p as any).sku ?? "", category: p.category ?? "", description: p.description ?? "", unit: (p as any).unit ?? "pcs" }); setOpen(true); };
+  const openEdit = (p: Product) => { setEditing(p); setForm({ name: p.name, sku: p.sku ?? "", category: p.category ?? "", description: p.description ?? "", unit: p.unit ?? "pcs" }); setOpen(true); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +71,7 @@ const Products = () => {
         <div className="p-6 md:p-10 space-y-6 max-w-[1600px]">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
-              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">// CATALOG</div>
+              <div className="font-mono text-[11px] tracking-[0.3em] text-muted-foreground mb-2">CATALOG</div>
               <h1 className="font-display text-4xl md:text-5xl font-black">Products</h1>
             </div>
             <Button onClick={openNew} className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-xs tracking-[0.2em] uppercase">
@@ -89,7 +89,7 @@ const Products = () => {
 
             {filtered.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-2">// EMPTY</div>
+                <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground mb-2">EMPTY</div>
                 <div className="font-display text-2xl font-black">No products yet</div>
                 <p className="text-muted-foreground mt-2 text-sm">Add your first product to start tracking.</p>
               </div>
@@ -131,7 +131,7 @@ const Products = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="rounded-none bg-card border-foreground/30 max-w-md">
           <DialogHeader>
-            <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">// {editing ? "EDIT" : "NEW"}</div>
+            <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground"> {editing ? "EDIT" : "NEW"}</div>
             <DialogTitle className="font-display text-2xl font-black">{editing ? "Edit product" : "New product"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">

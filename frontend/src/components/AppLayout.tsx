@@ -51,7 +51,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
-          {!collapsed && <div className="font-mono text-[9px] tracking-[0.3em] text-primary-foreground/50 px-2 py-2">// NAVIGATION</div>}
+          {!collapsed && <div className="font-mono text-[9px] tracking-[0.3em] text-primary-foreground/50 px-2 py-2"></div>}
           {nav.map(item => (
             <NavLink key={item.to} to={item.to}
               className={({ isActive }) => cn(
@@ -110,7 +110,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-4">
             <button className="md:hidden" onClick={() => setMobileOpen(true)}><Menu className="w-5 h-5" /></button>
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">// {current?.id ?? "00"}</div>
+              <div className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground"> {current?.id ?? "00"}</div>
               <div className="font-display font-black text-lg leading-none">{current?.label ?? "Dashboard"}</div>
             </div>
           </div>
