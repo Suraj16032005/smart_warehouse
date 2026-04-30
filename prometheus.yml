@@ -8,7 +8,7 @@ scrape_configs:
 
   - job_name: 'auth-service'
     static_configs:
-      - targets: ['cloudstock_auth:3001']
+      - targets: ['cloudstock_auth:3001']`
 
   - job_name: 'inventory-service'
     static_configs:
